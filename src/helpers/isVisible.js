@@ -1,3 +1,5 @@
+import { isClient } from './isClient.js';
+
 export function isVisible(el) {
-  return window.getComputedStyle(el).display !== 'none';
+  return isClient ? window.getComputedStyle(el).display !== 'none' : false;
 }

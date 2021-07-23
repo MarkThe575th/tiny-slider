@@ -1,1 +1,3 @@
-export var docElement = document.documentElement;
+import { isClient } from './isClient.js';
+
+export var docElement = isClient ? document.documentElement : null;

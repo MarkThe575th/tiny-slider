@@ -1,16 +1,17 @@
-var tns = (function (){
-var win = window;
+var isClient = typeof window !== 'undefined';
 
-var raf = win.requestAnimationFrame
-  || win.webkitRequestAnimationFrame
-  || win.mozRequestAnimationFrame
-  || win.msRequestAnimationFrame
+var win$1 = isClient ? window : null;
+
+var raf = !win$1 ? (cb) => {return cb();} : win$1.requestAnimationFrame
+  || win$1.webkitRequestAnimationFrame
+  || win$1.mozRequestAnimationFrame
+  || win$1.msRequestAnimationFrame
   || function(cb) { return setTimeout(cb, 16); };
 
-var win$1 = window;
+var win = isClient ? window : null;
 
-var caf = win$1.cancelAnimationFrame
-  || win$1.mozCancelAnimationFrame
+var caf = !win ? (_) => {} : win.cancelAnimationFrame
+  || win.mozCancelAnimationFrame
   || function(id){ clearTimeout(id); };
 
 function extend() {
@@ -65,11 +66,11 @@ function getBody () {
   return body;
 }
 
-var docElement = document.documentElement;
+var docElement = isClient ? document.documentElement : null;
 
 function setFakeBody (body) {
   var docOverflow = '';
-  if (body.fake) {
+  if (isClient && body.fake) {
     docOverflow = docElement.style.overflow;
     //avoid crashing IE8, if background image is used
     body.style.background = '';
@@ -82,7 +83,7 @@ function setFakeBody (body) {
 }
 
 function resetFakeBody (body, docOverflow) {
-  if (body.fake) {
+  if (isClient && body.fake) {
     body.remove();
     docElement.style.overflow = docOverflow;
     // Trigger layout so kinetic scrolling isn't disabled in iOS6+
@@ -123,6 +124,8 @@ function calc() {
 // get subpixel support value
 
 function percentageLayout() {
+  if (!isClient) return false;
+
   // check subpixel layout supporting
   var doc = document,
       body = getBody(),
@@ -205,7 +208,7 @@ function createStyleSheet (media, nonce) {
   document.querySelector('head').appendChild(style);
 
   return style.sheet ? style.sheet : style.styleSheet;
-}
+};
 
 // cross browsers addRule method
 function addCSSRule(sheet, selector, rules, index) {
@@ -329,7 +332,7 @@ function showElement(el, forceHide) {
 }
 
 function isVisible(el) {
-  return window.getComputedStyle(el).display !== 'none';
+  return isClient ? window.getComputedStyle(el).display !== 'none' : false;
 }
 
 function whichProperty(props){
@@ -358,7 +361,7 @@ function whichProperty(props){
 }
 
 function has3DTransforms(tf){
-  if (!tf) { return false; }
+  if (!isClient || !tf) { return false; }
   if (!window.getComputedStyle) { return false; }
   
   var doc = document,
@@ -449,7 +452,7 @@ function Events() {
       }
     }
   };
-}
+};
 
 function jsTransform(element, attr, prefix, postfix, to, duration, callback) {
   var tick = Math.min(duration, 10),
@@ -550,8 +553,8 @@ var tns = function(options) {
     nonce: false
   }, options || {});
 
-  var doc = document,
-      win = window,
+  var doc = isClient ? document : null,
+      win = isClient ? window : null,
       KEYS = {
         ENTER: 13,
         SPACE: 32,
@@ -559,7 +562,7 @@ var tns = function(options) {
         RIGHT: 39
       },
       tnsStorage = {},
-      localStorageAccess = options.useLocalStorage;
+      localStorageAccess = isClient && options.useLocalStorage;
 
   if (localStorageAccess) {
     // check browser version and local storage access
@@ -607,20 +610,22 @@ var tns = function(options) {
       tnsList = ['container', 'controlsContainer', 'prevButton', 'nextButton', 'navContainer', 'autoplayButton'],
       optionsElements = {};
 
-  tnsList.forEach(function(item) {
-    if (typeof options[item] === 'string') {
-      var str = options[item],
-          el = doc.querySelector(str);
-      optionsElements[item] = str;
+  if (isClient) {
+    tnsList.forEach(function(item) {
+      if (typeof options[item] === 'string') {
+        var str = options[item],
+            el = doc.querySelector(str);
+        optionsElements[item] = str;
 
-      if (el && el.nodeName) {
-        options[item] = el;
-      } else {
-        if (supportConsoleWarn) { console.warn('Can\'t find', options[item]); }
-        return;
+        if (el && el.nodeName) {
+          options[item] = el;
+        } else {
+          if (supportConsoleWarn) { console.warn('Can\'t find', options[item]); }
+          return;
+        }
       }
-    }
-  });
+    });
+  }
 
   // make sure at least 1 slide
   if (options.container.children.length < 1) {
@@ -970,7 +975,7 @@ var tns = function(options) {
   }
 
   function getWindowWidth () {
-    return win.innerWidth || doc.documentElement.clientWidth || doc.body.clientWidth;
+    return isClient ? win.innerWidth || doc.documentElement.clientWidth || doc.body.clientWidth : 0;
   }
 
   function getInsertPosition (pos) {
@@ -1307,7 +1312,7 @@ var tns = function(options) {
     //         margin-left: ~
 
     // Resource: https://docs.google.com/spreadsheets/d/147up245wwTXeQYve3BRSAD4oVcvQmuGsFteJOeA5xNQ/edit?usp=sharing
-    if (horizontal) {
+    if (isClient && horizontal) {
       if (PERCENTAGELAYOUT || autoWidth) {
         addCSSRule(sheet, '#' + slideId + ' > .tns-item', 'font-size:' + win.getComputedStyle(slideItems[0]).fontSize + ';', getCssRulesLength(sheet));
         addCSSRule(sheet, '#' + slideId, 'font-size:0;', getCssRulesLength(sheet));
@@ -1589,7 +1594,7 @@ var tns = function(options) {
         resizeTasks();
         events.emit('innerLoaded', info());
       });
-    } else if (responsive || fixedWidth || autoWidth || autoHeight || !horizontal) {
+    } else if (isClient && (responsive || fixedWidth || autoWidth || autoHeight || !horizontal)) {
       addEvents(win, {'resize': onResize});
     }
 
@@ -2961,6 +2966,8 @@ var tns = function(options) {
     return isTouchEvent(e) ? e.changedTouches[0] : e;
   }
   function getTarget (e) {
+    if (!isClient) return;
+
     return e.target || win.event.srcElement;
   }
 
@@ -3204,5 +3211,4 @@ var tns = function(options) {
   };
 };
 
-return tns;
-})();
+export { tns };

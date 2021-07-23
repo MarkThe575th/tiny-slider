@@ -1,5 +1,7 @@
-var win = window;
+import { isClient } from './isClient.js';
 
-export var caf = win.cancelAnimationFrame
+var win = isClient ? window : null;
+
+export var caf = !win ? (_) => {} : win.cancelAnimationFrame
   || win.mozCancelAnimationFrame
   || function(id){ clearTimeout(id); };

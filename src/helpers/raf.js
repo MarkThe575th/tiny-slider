@@ -1,6 +1,8 @@
-var win = window;
+import { isClient } from './isClient.js';
 
-export var raf = win.requestAnimationFrame
+var win = isClient ? window : null;
+
+export var raf = !win ? (cb) => {return cb();} : win.requestAnimationFrame
   || win.webkitRequestAnimationFrame
   || win.mozRequestAnimationFrame
   || win.msRequestAnimationFrame

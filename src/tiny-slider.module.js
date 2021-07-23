@@ -47,6 +47,7 @@ import { arrayFromNodeList } from './helpers/arrayFromNodeList.js';
 import { hideElement } from './helpers/hideElement.js';
 import { showElement } from './helpers/showElement.js';
 import { isVisible } from './helpers/isVisible.js';
+import { isClient } from './helpers/isClient.js';
 import { whichProperty } from './helpers/whichProperty.js';
 import { has3DTransforms } from './helpers/has3DTransforms.js';
 import { getEndProperty } from './helpers/getEndProperty.js';
@@ -120,7 +121,7 @@ export var tns = function(options) {
         RIGHT: 39
       },
       tnsStorage = {},
-      localStorageAccess = options.useLocalStorage;
+      localStorageAccess = isClient && options.useLocalStorage;
 
   if (localStorageAccess) {
     // check browser version and local storage access
@@ -168,20 +169,22 @@ export var tns = function(options) {
       tnsList = ['container', 'controlsContainer', 'prevButton', 'nextButton', 'navContainer', 'autoplayButton'],
       optionsElements = {};
 
-  tnsList.forEach(function(item) {
-    if (typeof options[item] === 'string') {
-      var str = options[item],
-          el = doc.querySelector(str);
-      optionsElements[item] = str;
+  if (isClient) {
+    tnsList.forEach(function(item) {
+      if (typeof options[item] === 'string') {
+        var str = options[item],
+            el = doc.querySelector(str);
+        optionsElements[item] = str;
 
-      if (el && el.nodeName) {
-        options[item] = el;
-      } else {
-        if (supportConsoleWarn) { console.warn('Can\'t find', options[item]); }
-        return;
+        if (el && el.nodeName) {
+          options[item] = el;
+        } else {
+          if (supportConsoleWarn) { console.warn('Can\'t find', options[item]); }
+          return;
+        }
       }
-    }
-  });
+    });
+  }
 
   // make sure at least 1 slide
   if (options.container.children.length < 1) {
@@ -531,7 +534,7 @@ export var tns = function(options) {
   }
 
   function getWindowWidth () {
-    return win.innerWidth || doc.documentElement.clientWidth || doc.body.clientWidth;
+    return isClient ? win.innerWidth || doc.documentElement.clientWidth || doc.body.clientWidth : 0;
   }
 
   function getInsertPosition (pos) {
@@ -1150,7 +1153,7 @@ export var tns = function(options) {
         resizeTasks();
         events.emit('innerLoaded', info());
       });
-    } else if (responsive || fixedWidth || autoWidth || autoHeight || !horizontal) {
+    } else if (isClient && (responsive || fixedWidth || autoWidth || autoHeight || !horizontal)) {
       addEvents(win, {'resize': onResize});
     }
 
@@ -2522,6 +2525,8 @@ export var tns = function(options) {
     return isTouchEvent(e) ? e.changedTouches[0] : e;
   }
   function getTarget (e) {
+    if (!isClient) return;
+
     return e.target || win.event.srcElement;
   }
 
