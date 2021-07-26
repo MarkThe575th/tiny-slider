@@ -112,8 +112,8 @@ export var tns = function(options) {
     nonce: false
   }, options || {});
 
-  var doc = document,
-      win = window,
+  var doc = isClient ? document : null,
+      win = isClient ? window : null,
       KEYS = {
         ENTER: 13,
         SPACE: 32,
@@ -871,7 +871,7 @@ export var tns = function(options) {
     //         margin-left: ~
 
     // Resource: https://docs.google.com/spreadsheets/d/147up245wwTXeQYve3BRSAD4oVcvQmuGsFteJOeA5xNQ/edit?usp=sharing
-    if (horizontal) {
+    if (isClient && horizontal) {
       if (PERCENTAGELAYOUT || autoWidth) {
         addCSSRule(sheet, '#' + slideId + ' > .tns-item', 'font-size:' + win.getComputedStyle(slideItems[0]).fontSize + ';', getCssRulesLength(sheet));
         addCSSRule(sheet, '#' + slideId, 'font-size:0;', getCssRulesLength(sheet));

@@ -1,17 +1,17 @@
 var isClient = typeof window !== 'undefined';
 
-var win$1 = isClient ? window : null;
-
-var raf = !win$1 ? (cb) => {return cb();} : win$1.requestAnimationFrame
-  || win$1.webkitRequestAnimationFrame
-  || win$1.mozRequestAnimationFrame
-  || win$1.msRequestAnimationFrame
-  || function(cb) { return setTimeout(cb, 16); };
-
 var win = isClient ? window : null;
 
-var caf = !win ? (_) => {} : win.cancelAnimationFrame
-  || win.mozCancelAnimationFrame
+var raf = !win ? (cb) => {return cb();} : win.requestAnimationFrame
+  || win.webkitRequestAnimationFrame
+  || win.mozRequestAnimationFrame
+  || win.msRequestAnimationFrame
+  || function(cb) { return setTimeout(cb, 16); };
+
+var win$1 = isClient ? window : null;
+
+var caf = !win$1 ? (_) => {} : win$1.cancelAnimationFrame
+  || win$1.mozCancelAnimationFrame
   || function(id){ clearTimeout(id); };
 
 function extend() {
@@ -208,7 +208,7 @@ function createStyleSheet (media, nonce) {
   document.querySelector('head').appendChild(style);
 
   return style.sheet ? style.sheet : style.styleSheet;
-};
+}
 
 // cross browsers addRule method
 function addCSSRule(sheet, selector, rules, index) {
@@ -452,7 +452,7 @@ function Events() {
       }
     }
   };
-};
+}
 
 function jsTransform(element, attr, prefix, postfix, to, duration, callback) {
   var tick = Math.min(duration, 10),
