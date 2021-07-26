@@ -257,7 +257,7 @@ function forEach (arr, callback, scope) {
   }
 }
 
-var classListSupport = 'classList' in document.createElement('_');
+var classListSupport = isClient ? 'classList' in document.createElement('_') : false;
 
 var hasClass = classListSupport ?
     function (el, str) { return el.classList.contains(str); } :
